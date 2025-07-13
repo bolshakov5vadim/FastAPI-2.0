@@ -4,8 +4,8 @@
 
 cd <ВАША_ПАПКА>
 
-sudo docker-compose build -f docker-compose.yaml
-
 sudo docker-compose up
+
+Указывать ничего не надо, автоматом чтение docker-compose.yaml и сборка.
 
 Теперь у вас API для базы данных!

@@ -4,7 +4,7 @@
 
 cd <ВАША_ПАПКА>
 
-sudo docker-compose build
+sudo docker-compose build -f docker-compose.yaml
 
 sudo docker-compose up
 

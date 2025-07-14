@@ -32,7 +32,20 @@ async def read(data  = Body(), db: Session = Depends(get_db)):
     
     # Запрос к БД
     if(data["page"]): person = await db.query(Person).limit(10).offset((data["page"] - 1) * 10).all()
-    if(data["id"]): person = await db.query(Person).filter(Person.id == data["id"]).first() 
+    if(data["status"]): person = await db.query(Person).filter(Person.status == data["status"]) # Запрос
+
+    # Если пользователь найден, отправляем его
+    if person==None:  
+        return JSONResponse(status_code=404, content={ "message": "Пользователь не найден"})
+    logger.info(f"Data requested for id: {person.id}")
+    return person
+
+
+@app.get(f"/api/{id}")
+async def read(id: int, db: Session = Depends(get_db)):
+    
+    # Запрос к БД
+    person = await db.query(Person).filter(Person.id == id).first() 
 
     # Если пользователь найден, отправляем его
     if person==None:  
@@ -50,12 +63,13 @@ async def create(data  = Body(), db: Session = Depends(get_db)):
 
     try:
         db.add(person)
-        db.commit()
+        await db.commit()
         db.refresh(person)
         logger.info(f"Data posted")
         return person
     except Exception as e:  # Откат на случай исключений
-        db.rollback()
+        await db.rollback()
+        logger.info(f"ERROR in creation: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -75,29 +89,53 @@ async def update(data  = Body(), db: Session = Depends(get_db)):
     if(data["status"]): person.status=data["status"]
 
     try:
-        db.commit()
+        await db.commit()
         db.refresh(person)
         logger.info(f"Data updated for id: {person.id}")
         return person
     except Exception as e:  # Откат на случай исключений
-        db.rollback()
+        await db.rollback()
+        logger.info(f"ERROR in updating: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
   
 @app.delete("/api")
 async def delete(data  = Body(), db: Session = Depends(get_db)):
 
-    if(data["id"]): person = await db.query(Person).filter(Person.id == data["id"]).first() # Запрос
     if(data["status"]): person = await db.query(Person).filter(Person.status == data["status"]) # Запрос
 
-    # Если пользователь найден, удаляем его
     if person == None:
         return JSONResponse( status_code=404, content={ "message": "Пользователь не найден"})
+   
+    # Если пользователь найден, удаляем его
+
     try:
         db.delete(person)
-        db.commit()
+        await db.commit()
         logger.info(f"Data deleted for id: {person.id}")
         return person
     except Exception as e:  # Откат на случай исключений
-        db.rollback()
+        await db.rollback()
+        logger.info(f"ERROR in deletion: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.delete(f"/api/{id}")
+async def delete(id: int, db: Session = Depends(get_db)):
+
+    person = await db.query(Person).filter(Person.id == id).first() # Запрос
+
+    if person == None:
+        return JSONResponse( status_code=404, content={ "message": "Пользователь не найден"})
+   
+    # Если пользователь найден, удаляем его
+
+    try:
+        db.delete(person)
+        await db.commit()
+        logger.info(f"Data deleted for id: {person.id}")
+        return person
+    except Exception as e:  # Откат на случай исключений
+        await db.rollback()
+        logger.info(f"ERROR in deletion: {e}")
         raise HTTPException(status_code=500, detail=str(e))

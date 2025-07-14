@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  python:			# По умолчанию контейнеры создаются в общей сети
+  fastapi_app:			# По умолчанию контейнеры создаются в общей сети
     build:
       context: ./fastapi_app	# Dockerfile в папке fastapi_app
       dockerfile: Dockerfile
@@ -9,6 +9,11 @@ services:
       - "8000:8000"
     depends_on:
       - postgres
+
+  aiogram_app:			
+    build:
+      context: ./aiogram_app	# Dockerfile в папке aiogram_app
+      dockerfile: Dockerfile
 
   postgres:
     image: postgres:13

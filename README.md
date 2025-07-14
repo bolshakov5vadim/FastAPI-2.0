@@ -14,12 +14,12 @@ sudo docker-compose up
 
 Изменения:
 
--AIOGRAM изменена сборка запросов. Теперь красивее
+- AIOGRAM изменена сборка запросов. Теперь красивее
 
--FAST API добавлены routes "Получать по условию" "Удалять по условию"
+- FAST API добавлены routes "Получать по условию" "Удалять по условию"
 
--FAST API добавлено асихронное исполнение Session
+- FAST API добавлено асихронное исполнение Session
 
--Добавлен logger в try-except
+- Добавлен logger в try-except
 
 - docker-compose теперь из трех контейнеров - aiogram_app | fastapi_app | postgres

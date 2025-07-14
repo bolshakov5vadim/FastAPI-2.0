@@ -34,9 +34,9 @@ async def read(data  = Body(), db: Session = Depends(get_db)):
     if(data["page"]): person = await db.query(Person).limit(10).offset((data["page"] - 1) * 10).all()
     if(data["id"]): person = await db.query(Person).filter(Person.id == data["id"]).first() 
 
+    # Если пользователь найден, отправляем его
     if person==None:  
         return JSONResponse(status_code=404, content={ "message": "Пользователь не найден"})
-    # Если пользователь найден, отправляем его
     logger.info(f"Data requested for id: {person.id}")
     return person
   
@@ -45,7 +45,7 @@ async def read(data  = Body(), db: Session = Depends(get_db)):
 async def create(data  = Body(), db: Session = Depends(get_db)):
 
     # Запрос к БД
-    # Если используется auto-increment, то не нужно отправлять id 
+    # Если используется auto-increment, не нужно отправлять id 
     person = Person(name=data["name"], surname=data["surname"], birthday=data["birthday"], status=data["status"])
 
     try:
@@ -54,8 +54,8 @@ async def create(data  = Body(), db: Session = Depends(get_db)):
         db.refresh(person)
         logger.info(f"Data posted")
         return person
-    except Exception as e:
-        db.rollback()  # Откат на случай исключений
+    except Exception as e:  # Откат на случай исключений
+        db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -64,9 +64,9 @@ async def update(data  = Body(), db: Session = Depends(get_db)):
    
     person = await db.query(Person).filter(Person.id == data["id"]).first() # Запрос
 
+    # Если пользователь найден, обновляем его
     if person == None: 
         return JSONResponse(status_code=404, content={ "message": "Пользователь не найден"})
-    # Если пользователь найден, обновляем его
 
     # Если поле заполнено, обновляем только его
     if(data["name"]): person.name = data["name"]
@@ -79,8 +79,8 @@ async def update(data  = Body(), db: Session = Depends(get_db)):
         db.refresh(person)
         logger.info(f"Data updated for id: {person.id}")
         return person
-    except Exception as e:
-        db.rollback()  # Откат на случай исключений
+    except Exception as e:  # Откат на случай исключений
+        db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
   
@@ -90,16 +90,14 @@ async def delete(data  = Body(), db: Session = Depends(get_db)):
     if(data["id"]): person = await db.query(Person).filter(Person.id == data["id"]).first() # Запрос
     if(data["status"]): person = await db.query(Person).filter(Person.status == data["status"]) # Запрос
 
+    # Если пользователь найден, удаляем его
     if person == None:
         return JSONResponse( status_code=404, content={ "message": "Пользователь не найден"})
-   
-    # Если пользователь найден, удаляем его
-
     try:
         db.delete(person)
         db.commit()
         logger.info(f"Data deleted for id: {person.id}")
         return person
-    except Exception as e:
-        db.rollback()  # Откат на случай исключений
+    except Exception as e:  # Откат на случай исключений
+        db.rollback()
         raise HTTPException(status_code=500, detail=str(e))

@@ -30,9 +30,13 @@ def get_db():
 @app.get("/api")
 async def read(data  = Body(), db: Session = Depends(get_db)):
     
-    # Запрос к БД
-    if(data["page"]): person = await db.query(Person).limit(10).offset((data["page"] - 1) * 10).all()
-    if(data["status"]): person = await db.query(Person).filter(Person.status == data["status"]) # Запрос
+    try:
+        # Запрос к БД
+        if(data["page"]): person = await db.query(Person).limit(10).offset((data["page"] - 1) * 10).all()
+        if(data["status"]): person = await db.query(Person).filter(Person.status == data["status"])
+    except Exception as e:  # Откат на случай исключений
+        logger.info(f"ERROR in reading: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
     # Если пользователь найден, отправляем его
     if person==None:  
@@ -44,8 +48,12 @@ async def read(data  = Body(), db: Session = Depends(get_db)):
 @app.get(f"/api/{id}")
 async def read(id: int, db: Session = Depends(get_db)):
     
-    # Запрос к БД
-    person = await db.query(Person).filter(Person.id == id).first() 
+    try:
+        # Запрос к БД
+        person = await db.query(Person).filter(Person.id == id).first() 
+    except Exception as e:  # Откат на случай исключений
+        logger.info(f"ERROR in reading: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
     # Если пользователь найден, отправляем его
     if person==None:  

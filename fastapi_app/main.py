@@ -55,10 +55,11 @@ async def read(id: int, db: Session = Depends(get_db)):
         logger.info(f"ERROR in reading: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+    logger.info(f"Data requested for id: {person.id}")
+    
     # Если пользователь найден, отправляем его
     if person==None:  
         return JSONResponse(status_code=404, content={ "message": "Пользователь не найден"})
-    logger.info(f"Data requested for id: {person.id}")
     return person
   
   

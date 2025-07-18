@@ -15,10 +15,6 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-# API + описание 4-х действий
-app = FastAPI()
-
-
 def get_db():
     db = SessionLocal()
     try:
@@ -26,6 +22,10 @@ def get_db():
     finally:
         db.close()
    
+
+# API + описание 4-х действий
+app = FastAPI()
+
 
 @app.get("/api")
 async def read(data  = Body(), db: Session = Depends(get_db)):

@@ -1,9 +1,10 @@
 from SQLsession import SessionLocal, Person
 from sqlalchemy.orm import Session
 
-from fastapi import Depends, FastAPI, Body
+from fastapi import Depends, FastAPI, Body, HTTPException
 from fastapi.responses import JSONResponse, FileResponse
 import logging
+from pydantic import BaseModel
 
 
 # Создание объекта логирования
@@ -13,6 +14,22 @@ logging.basicConfig(
     datefmt = "%Y-%m-%d %H:%M:%S",
 )
 logger = logging.getLogger(__name__)
+
+"""
+# Создание класса ответа с Pydantic
+class Response(BaseModel):
+    id: int
+    name: str
+    surname: str
+    status: str
+    birthday: str
+    message: str
+
+
+async def get_db():
+    async with SessionLocal() as db:
+        yield db
+"""
 
 
 def get_db():
@@ -27,22 +44,23 @@ def get_db():
 app = FastAPI()
 
 
-@app.get("/api")
-async def read(data  = Body(), db: Session = Depends(get_db)):
+@app.get("/api", response_model=Response)
+async def read(data  = Body(), db: Session = Depends(get_db)): # AsyncSession
     
     try:
         # Запрос к БД
-        if(data["page"]): person = await db.query(Person).limit(10).offset((data["page"] - 1) * 10).all()
-        if(data["status"]): person = await db.query(Person).filter(Person.status == data["status"])
-    except Exception as e:  # Откат на случай исключений
+        if(data["page"] != None): person = await db.query(Person).limit(10).offset((data["page"] - 1) * 10).all()
+        if(data["status"] != None): person = await db.query(Person).filter(Person.status == data["status"])
+    except Exception as e:  # Откат на случай исключений, работа лога
         logger.info(f"ERROR in reading: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
     # Если пользователь найден, отправляем его
     if person==None:  
-        return JSONResponse(status_code=404, content={ "message": "Пользователь не найден"})
+        raise HTTPException(status_code=404, detail="Пользователь не найден")
     logger.info(f"Data requested for id: {person.id}")
     return person
+    # return Response(id=person.id, name=person.name, surname = person.surname, status=person.status, birthday=person.birthday)
 
 
 @app.get(f"/api/{id}")
@@ -56,10 +74,10 @@ async def read(id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=str(e))
 
     logger.info(f"Data requested for id: {person.id}")
-    
+
     # Если пользователь найден, отправляем его
     if person==None:  
-        return JSONResponse(status_code=404, content={ "message": "Пользователь не найден"})
+        raise HTTPException(status_code=404, detail="Пользователь не найден")
     return person
   
   
@@ -89,13 +107,13 @@ async def update(data  = Body(), db: Session = Depends(get_db)):
 
     # Если пользователь найден, обновляем его
     if person == None: 
-        return JSONResponse(status_code=404, content={ "message": "Пользователь не найден"})
+        raise HTTPException(status_code=404, detail="Пользователь не найден")
 
     # Если поле заполнено, обновляем только его
-    if(data["name"]): person.name = data["name"]
-    if(data["surname"]): person.surname = data["surname"]
-    if(data["birthday"]): person.surname = data["birthday"]
-    if(data["status"]): person.status=data["status"]
+    if(data["name"] != None): person.name = data["name"]
+    if(data["surname"] != None): person.surname = data["surname"]
+    if(data["birthday"] != None): person.surname = data["birthday"]
+    if(data["status"] != None): person.status=data["status"]
 
     try:
         await db.commit()
@@ -111,10 +129,10 @@ async def update(data  = Body(), db: Session = Depends(get_db)):
 @app.delete("/api")
 async def delete(data  = Body(), db: Session = Depends(get_db)):
 
-    if(data["status"]): person = await db.query(Person).filter(Person.status == data["status"]) # Запрос
+    if(data["status"] != None): person = await db.query(Person).filter(Person.status == data["status"]) # Запрос
 
     if person == None:
-        return JSONResponse( status_code=404, content={ "message": "Пользователь не найден"})
+        raise HTTPException(status_code=404, detail="Пользователь не найден")
    
     # Если пользователь найден, удаляем его
 
@@ -135,7 +153,7 @@ async def delete(id: int, db: Session = Depends(get_db)):
     person = await db.query(Person).filter(Person.id == id).first() # Запрос
 
     if person == None:
-        return JSONResponse( status_code=404, content={ "message": "Пользователь не найден"})
+        raise HTTPException(status_code=404, detail="Пользователь не найден")
    
     # Если пользователь найден, удаляем его
 

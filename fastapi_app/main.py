@@ -63,7 +63,7 @@ async def read(data  = Body(), db: Session = Depends(get_db)): # AsyncSession
         raise HTTPException(status_code=404, detail="Пользователь не найден")
     logger.info(f"Data requested for id: {person.id}")
     return person
-    # return Response(id=person.id, name=person.name, surname = person.surname, status=person.status, birthday=person.birthday)
+    # return Response.from_orm(person)
 
 
 @app.get(f"/api/{id}")

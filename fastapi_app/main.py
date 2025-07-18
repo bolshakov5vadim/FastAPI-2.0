@@ -44,7 +44,7 @@ def get_db():
 app = FastAPI()
 
 
-@app.get("/api", response_model=Response)
+@app.get("/api") # response_model=Response
 async def read(data  = Body(), db: Session = Depends(get_db)): # AsyncSession
     
     try:

@@ -25,6 +25,9 @@ class Response(BaseModel):
     birthday: str
     message: str
 
+    class Config:
+        orm_mode = True 
+
 
 async def get_db():
     async with SessionLocal() as db:

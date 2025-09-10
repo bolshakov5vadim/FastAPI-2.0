@@ -4,9 +4,11 @@
 
 cd <ВАША_ПАПКА>
 
-sudo docker-compose up
+sudo docker build . -t my_fastapi
 
-Указывать ничего не надо, автоматом чтение docker-compose.yaml и сборка.
+sudo docker run -p 80:80 my_fastapi
+p 443:443 если HTTPS
+
 
 Теперь у вас API для базы данных!
 
@@ -14,12 +16,8 @@ sudo docker-compose up
 
 Изменения:
 
-- AIOGRAM изменена сборка запросов. Теперь красивее
-
-- FAST API добавлены routes "Получать по условию" "Удалять по условию"
+- FAST API добавлены routes "Удалять по условию"
 
 - FAST API добавлено асихронное исполнение Session
 
-- Добавлен logger в try-except
-
-- docker-compose теперь из трех контейнеров - aiogram_app | fastapi_app | postgres
+- Добавлен logger

@@ -2,7 +2,7 @@
 
 Затем
 
-cd <ВАША_ПАПКА>
+cd home/../Desktop/fastapi_app
 
 sudo docker build . -t my_fastapi
 
